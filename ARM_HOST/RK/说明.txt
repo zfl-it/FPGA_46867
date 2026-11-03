@@ -1,0 +1,78 @@
+RK3568 端代码包（精简版）
+==================================================
+导出时间：2026-10-31 19:3x
+来源工程：C:\Users\Lenovo\Desktop\RK3568_V8_720P（原件未改动）
+本包为「干净可运行子集」：只保留当前 ADAS 车道线/路况识别链路真正用到的文件。
+
+一、目录与文件说明
+--------------------------------------------------
+start_auto_drive.bat     一键启动（RK 端 v8_start + HDMI 显示 + 上位机模拟器）
+v8_start.py              板端主程序启动器（拼参数、SSH 拉起、日志到 run.log）
+v8_ctrl.py               旧的车牌模式控制工具（ADAS 模式下不要用它启动，会顶掉进程）
+v8_hdmi_display.py       HDMI 本地显示（锁定 connector、NV12 直送）
+push_and_build.py        推送 core 源文件到板子并 cmake/make 编译、重启
+convert_bl3.py           模型转换（PT → ONNX → RKNN int8），WSL Ubuntu-22.04 内跑
+export_bl3_onnx.py       YOLO 导出 ONNX（end2end=False，置信度预乘）
+calib_dataset.txt        量化校准图片清单
+grab_frame.py            抓帧工具（PC 侧取板端画面）
+uart_broadcast.py        串口联调/广播工具
+rk_clock.py / dual_stopwatch.py / edid_probe.sh / wsl_diag.sh
+                         时钟校准、延时测量、EDID 探测、WSL 环境诊断
+转换BL3模型.bat          一键调 WSL 跑 convert_bl3.py
+诊断WSL环境.bat          检查 WSL 里 rknn-toolkit2 环境
+flv_player.html          浏览器播放 ZLMediaKit 流
+pango_pci_driver.ko      PCIe 采集驱动（板端 insmod 用）
+
+cpp/                     板端 C++ 源码（CMake 工程）
+  main.cc                主程序：PCIe 采集 → ADAS 推理 → 画框 → H.264/JPEG 推流 → 串口下发
+                         （含双上下文 worker、NPU 零拷贝、AI 识别闸门 UDP 9998、
+                           暂停后画面不留残框）
+  adas_detector.cc/.h    RKNN 推理封装（零拷贝 rknn_create_mem + set_io_mem）
+  adas_offline_test.cc   板端离线单帧验证程序
+  mpp_h264_encoder.*     MPP 硬件编码（RTSP 推流用）
+  zlm_streamer.*         ZLMediaKit 推流
+  pango_fun.*/pango_pci.h / pcie_reader_lib.*
+                         FPGA(盘古) PCIe 采集与像素格式转换
+  pixel_convert.*        NV12/RGB 转换
+  main.c                 驱动侧最小示例（CMake 里不参与主目标）
+  ZLMediaKit/            推流 SDK（已裁剪，只留头文件与库）
+  CMakeLists.txt         构建脚本（目标：rknn_browser_hdmi_lpr_demo）
+
+driver/                  PCIe 驱动源码（打包成 pango_pci_driver.ko）
+model/                   adas12n7_736x1280_i8_scaled.rknn —— 当前在用模型
+                         （BLP-7 训练，12 类，736x1280 int8）
+
+二、剔除内容（约 250MB，均与本链路无关或可再生成）
+--------------------------------------------------
+· 所有 *.bak_* / *.bak 备份（main.cc、adas_detector、v8_start、convert_bl3 等）
+· 转换日志 convert_log.txt / convert_blp3.log / convert_blp4.log
+· 抓帧残留 grab.jpg / grab_v6.jpg
+· res_ab_test/            240MB 旧 A/B 实验数据
+· .idea/ __pycache__/     IDE 与 Python 缓存
+· 车牌时代文档 PROJECT.md / PROJECT_SPEC.md / DEPLOYMENT_OBB.md
+· 车牌时代模型与字体：plate_obb_i8.rknn、lprnet、simhei.ttf
+· 历史模型：adas10_*、adas12_*（ONNX + 旧 rknn）、adas12n4、adas12n6 —— 只留当前 adas12n7
+· 全部 .onnx 中间文件（需要时用 convert_bl3.py 重新导出）
+
+三、本包内已做的路径适配（相对本包，双击即可用）
+--------------------------------------------------
+· start_auto_drive.bat：RK_DIR=%~dp0.，SIM_DIR=%~dp0..\上位机
+  → 因此 RK 与 上位机 两个文件夹必须放在同一个父目录下（例如都在桌面）。
+· 转换BL3模型.bat / 诊断WSL环境.bat：PROJ=/mnt/c/Users/Lenovo/Desktop/RK
+· convert_bl3.py：WSL 内 cd /mnt/c/Users/Lenovo/Desktop/RK
+  → 如果把本包放到别的位置，请同时改这三处路径。
+· bat 文件保持 GBK 编码 + CRLF 换行。
+
+四、常用命令
+--------------------------------------------------
+D:\python\python.exe v8_start.py start|restart|stop|status
+D:\python\python.exe push_and_build.py            # 改了 cpp 后推上去编译
+ADAS_WORKERS=1 ... v8_start.py start              # 单上下文（默认 2）
+板子：192.168.137.100 / linaro / linaro，板端路径 /userdata/RK3568_V8_720P
+PC 网卡需配静态 IP 192.168.137.1
+
+五、注意
+--------------------------------------------------
+· 本包不含车牌模式模型（plate_obb / lprnet / simhei.ttf），若要 ADAS_MODE=False 跑车牌，
+  需从原工程 RK3568_V8_720P\model\ 取回对应文件。
+· 依赖：PC 侧脚本只需 pip install paramiko。

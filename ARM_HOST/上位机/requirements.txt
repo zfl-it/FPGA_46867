@@ -1,0 +1,14 @@
+# 交规决策模拟器运行依赖（Python 3.10+，需带 tkinter 的解释器）
+
+# 串口（A 收 RK3568 位串 / B 发盘古50K 指令 / 倒车角度帧）
+pyserial>=3.5
+
+# 实时画面（RK3568 网口 RTSP 拉流 + 贴图显示）
+opencv-python>=4.8
+pillow>=10.0
+
+# 人声语音提示（可选）：edge-tts 在线六语种 + pygame 播放 mp3；
+# 不安装会自动降级到 Windows 系统语音（SAPI），再不行蜂鸣兜底
+edge-tts>=7.0
+pygame>=2.6
+pythonnet>=3.0

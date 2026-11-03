@@ -1,0 +1,34 @@
+version,2022.2-SP6.4<build 146967>
+project name,50H_OV5640_HDMI_ETHERNET.pds
+
+Single Seed:
+Seed,State,Convergence,Setup(Slow),Setup(Fast),Hold(Slow),Hold(Fast),Recovery(Slow),Recovery(Fast),Removal(Slow),Removal(Fast),PBM-GP,PBM-PreGP,PBM-PostGP,LP,Total Placement Cpu Time,Detailed routing,Total Routing Cpu Time,Wire Length After Post-GP,Wire Length After LP,Wire Length After DP,Routing Arc Length,Worst Slack After GP Timing,Worst Slack After LP Timing,Worst Slack Before RP,Worst Slack Before DP,Worst Slack After DP,Worst Slack After Placement,Worst Slack After TA By Preroute,TNS After DP,TNS Before Route,Setup(Slow) Total Failing TNS,Setup(Slow) Total Failing Endpoints,Hold(Slow) Total Failing THS,Hold(Slow) Total Failing Endpoints,Power
+single,OK,Fail,0.921,1.834,-0.008,-0.069,5.291,6.533,0.438,0.278,NA,NA,NA,1.67,52.56,59.48,106.25,NA,NA,NA,241800,NA,NA,976,NA,NA,1395,NA,NA,0,0.000,0,-0.008,1,NA
+Pass Rate/Convergence Rate,100.00%,0.00%
+
+Synthesize:
+control_set,551
+Synthesize Performance Summary:
+slack category,Synthesize Setup WNS,Synthesize Setup TNS,Synthesize Recovery WNS,Synthesize Recovery TNS
+slack value,0.175,0.000,6.050,0.000
+Synthesize Process Cpu Time,0h:1m:32s
+
+Device Map:
+Device Map Resource Usage Summary:
+Logic Utilization,LUT,FF,DRM,APM,Distributed RAM,HSSTHP,USCM,HCKB,RCKB
+Used,15428,12637,81.5,18.5,73,NA,13,NA,0
+Available,42800,64200,134,84,17000,NA,30,NA,24
+Utilization(%),37%,20%,61%,23%,1%,NA,44%,NA,0%
+Device Map Process Cpu Time,0h:0m:20s
+
+Project Configurations:
+top module,hdmi_ddr_ov5640_top
+compile,
+synthesize," -dir {imports/Program Files/pango/PDS_2022.2-SP6.4/syn/bin/synplify_pro.exe} 
+ -ads "
+device map,
+place & route,
+
+Test Parameters Configurations:
+testparam,
+

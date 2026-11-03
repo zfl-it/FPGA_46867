@@ -1,0 +1,46 @@
+# ============================================================
+#  FPGA_46867  仓库忽略规则
+#  原则：只提交源码/约束/脚本/文档，编译中间产物与本机运行时缓存不入库
+# ============================================================
+
+# ---------- Pango PDS 工程编译流水线产物 ----------
+# 六个阶段目录里的 .db / .adf / .netlist / .vm 动辄 10MB+，且每次编译都会变
+FPGA_50H_100H/*/compile/*
+FPGA_50H_100H/*/place_route/*
+FPGA_50H_100H/*/report_timing/*
+FPGA_50H_100H/*/synthesize/*
+FPGA_50H_100H/*/device_map/*
+FPGA_50H_100H/*/generate_bitstream/*
+
+# 例外：引脚约束表与烧录用码流值得留档
+!FPGA_50H_100H/*/device_map/*.pcf
+!FPGA_50H_100H/*/generate_bitstream/*.sbit
+
+# PDS 生成的综合器软链接（指向 D:\Program Files\pango\...\synplify_pro.exe）
+FPGA_50H_100H/*/imports/
+
+# 各阶段运行日志
+FPGA_50H_100H/*/*/run.log
+*.log
+
+# ---------- 内核模块 / 动态库编译产物 ----------
+*.ko
+*.o
+*.so
+*.so.*
+
+# ---------- 上位机运行时缓存（TTS 语音缓存，可重新生成）----------
+ARM_HOST/上位机/voice_cache/*.mp3
+ARM_HOST/上位机/voice_cache/*.joined
+
+# ---------- Python ----------
+__pycache__/
+*.pyc
+*.pyo
+
+# ---------- 系统 / 编辑器 ----------
+Thumbs.db
+desktop.ini
+.DS_Store
+.vscode/
+.idea/

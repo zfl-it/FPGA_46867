@@ -1,0 +1,59 @@
+依赖说明 / Requirements
+================================================================
+
+本软件主体仍使用纯 Python 标准库（tkinter、math、time、threading、queue 等），
+但 v2.0 新增了串口功能，因此需要安装第三方包：
+
+    pyserial >= 3.5
+
+安装方式（任选其一）
+----------------------------------------------------------------
+方式 0（推荐，已内置）：
+    本文件夹已自带 .venv 虚拟环境，内含 pyserial。
+    直接双击 "启动模拟器.bat" 即可使用。
+
+方式 1：
+    双击 "安装依赖.bat" —— 会自动创建 .venv 并安装 pyserial。
+
+方式 2：
+    如果你有自己维护的 Python 环境，可在项目目录执行：
+        .venv\Scripts\python.exe -m pip install -r requirements.txt
+    或对应 Python 解释器的：
+        python -m pip install pyserial
+
+
+使用的标准库模块：
+    tkinter          图形界面
+    tkinter.ttk      主题控件
+    tkinter.messagebox 输入错误/串口错误提示
+    math             转向角度计算（坐标旋转）
+    time             时间戳、报警闪烁计时
+    threading        串口读线程
+    queue            串口数据与主线程 UI 安全通信
+    re               HEX 发送数据清洗
+    winsound         Windows 蜂鸣报警（可选，非 Windows 自动降级）
+
+使用的第三方模块：
+    serial           串口打开/关闭/读写
+    serial.tools.list_ports  枚举可用串口
+
+说明：v3.3 起视频采集已移除，不再依赖 opencv-python (cv2) 与 pillow (PIL/ImageTk)，
+      只保留 pyserial 一个第三方依赖。
+
+Python 版本要求：
+    >= 3.9
+说明：源码顶部使用了 "from __future__ import annotations" 与内置泛型 (dict/tuple)，
+      在 3.9+ 均可正常运行。
+
+已实测通过的环境：
+    - Python 3.13.12 (WorkBuddy managed)   Windows 11
+    - Python 3.12.9  (D:\python)           Windows 11
+
+
+重要设计约束（v2.0）
+----------------------------------------------------------------
+1. 车速 speed 是**外部输入量**。程序内部不自动加速、不自动制动、
+   不因报警/放行/停车而改变 speed；本版本已关闭左侧手动输入框与设定按钮。
+2. 6 路布尔量同样为外部输入量。启动时默认 111110（真真真真真假），
+   之后只能由串口接收到的 6 字节 1/0 字符串更新；界面上不再可点击切换。
+3. "打开串口"后，读线程在后台运行，主线程通过队列安全刷新界面。

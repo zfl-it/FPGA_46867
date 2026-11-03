@@ -1,0 +1,27 @@
+PC 端依赖说明（RK 侧脚本）
+==================================================
+本目录里的 Python 脚本在 PC 上运行，只有一个第三方依赖：
+
+    pip install paramiko
+
+使用位置：
+· v8_start.py        通过 SSH 登录板子拉起/停止主程序、读 run.log
+· v8_hdmi_display.py 通过 SSH 操作 HDMI 显示
+· push_and_build.py  通过 SFTP 推送源码 + 远程编译
+· v8_ctrl.py         旧车牌模式控制（同样走 SSH）
+
+标准库即可、无需安装的部分：
+· grab_frame.py / uart_broadcast.py / rk_clock.py / dual_stopwatch.py
+· convert_bl3.py / export_bl3_onnx.py —— 这两个不在 Windows 上直接跑，
+  而是由 转换BL3模型.bat 调 WSL Ubuntu-22.04：
+      rknn-toolkit2 (2.x) + onnx + onnxruntime + torch/ultralytics
+  检查环境：双击 诊断WSL环境.bat
+
+板端（RK3568）编译所需（已在板子上，无需本包安装）：
+· g++ / cmake / make
+· OpenCV 4（/usr/include/opencv4）
+· RKNN Runtime（/userdata/RKSDK/rknn-toolkit2/rknpu2/runtime/Linux/librknn_api）
+· rockchip MPP（mpp_h264_encoder 用）
+· ZLMediaKit 头文件与库（本包 cpp/ZLMediaKit 已带）
+
+Python 版本：PC 端脚本用 3.8+ 均可（本机 D:\python\python.exe）。

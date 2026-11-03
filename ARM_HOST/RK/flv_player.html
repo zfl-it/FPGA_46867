@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>RK3568 车牌识别 - HTTP-FLV 播放器</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 24px; background: #0e1117; color: #e6edf3;
+    font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+  }
+  h1 { font-size: 20px; margin: 0 0 16px; font-weight: 600; }
+  .bar {
+    display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+  input[type=text] {
+    flex: 1; min-width: 320px; padding: 9px 12px; border-radius: 6px;
+    border: 1px solid #30363d; background: #161b22; color: #e6edf3;
+    font-family: Consolas, monospace; font-size: 13px;
+  }
+  button {
+    padding: 9px 18px; border-radius: 6px; border: 1px solid #30363d;
+    background: #21262d; color: #e6edf3; cursor: pointer; font-size: 13px;
+  }
+  button:hover { background: #30363d; }
+  button.primary { background: #1f6feb; border-color: #1f6feb; }
+  button.primary:hover { background: #388bfd; }
+  video {
+    width: 100%; max-width: 1280px; background: #000;
+    border-radius: 8px; border: 1px solid #30363d;
+  }
+  #stat {
+    margin-top: 12px; font-family: Consolas, monospace; font-size: 13px;
+    color: #8b949e; line-height: 1.7;
+  }
+  .hint { color: #8b949e; font-size: 13px; line-height: 1.8; }
+  .ok { color: #3fb950; }
+  .warn { color: #d29922; }
+</style>
+</head>
+<body>
+  <h1>RK3568 车牌识别 · HTTP-FLV 播放器（TCP，不走 WebRTC）</h1>
+
+  <div class="bar">
+    <input id="url" type="text" value="http://192.168.137.100:8084/live/plate.live.flv">
+    <button class="primary" onclick="play()">播放</button>
+    <button onclick="stop()">停止</button>
+  </div>
+
+  <video id="v" controls autoplay muted playsinline></video>
+
+  <div id="stat">状态：等待播放…</div>
+
+  <div class="hint" style="margin-top:18px">
+    <b>说明</b><br>
+    · 这个页面走 <b>HTTP-FLV（TCP 8084）</b>，不依赖 WebRTC 的 UDP 8004，能绕过大部分防火墙/校园网限制。<br>
+    · 如果这里<b>能出画面</b>，说明板子推流完全正常，问题只在于监控页的 WebRTC（浏览器或 UDP 被拦）→ 日常就用这个页面看即可。<br>
+    · 如果这里<b>也没画面</b>，再试 VLC：媒体 → 打开网络串流 → 粘贴上面的地址。<br>
+    · 备用协议：RTSP <code>rtsp://192.168.137.100:8558/live/plate</code>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/flv.js@1.6.2/dist/flv.min.js"></script>
+<script>
+var player = null;
+
+function log(msg, cls) {
+  var el = document.getElementById('stat');
+  el.innerHTML = msg;
+  el.className = 'stat' + (cls ? ' ' + cls : '');
+}
+
+function play() {
+  stop();
+  var url = document.getElementById('url').value.trim();
+  var v = document.getElementById('v');
+
+  if (typeof flvjs === 'undefined') {
+    log('flv.js 加载失败 —— 本机没网或被 CDN 拦截。<br>请改用 VLC 打开：<code>' + url + '</code>', 'warn');
+    return;
+  }
+
+  if (!flvjs.isSupported()) {
+    log('当前浏览器不支持 flv.js，请换 Chrome / Edge。', 'warn');
+    return;
+  }
+
+  player = flvjs.createPlayer({
+    type: 'flv',
+    url: url,
+    isLive: true,
+    hasAudio: false,
+    enableStashBuffer: false,
+    stashInitialSize: 128
+  });
+
+  player.on(flvjs.Events.ERROR, function (t, d) {
+    log('播放错误: ' + t + ' / ' + d, 'warn');
+  });
+
+  player.on(flvjs.Events.METADATA_ARRIVED, function () {
+    log('已收到视频流，正在播放 <span class="ok">●</span>', 'ok');
+  });
+
+  player.attachMediaElement(v);
+  player.load();
+
+  var p = v.play();
+  if (p && p.catch) p.catch(function () { /* 自动播放被拦截时需手动点一下 */ });
+
+  log('正在连接 ' + url + ' …');
+}
+
+function stop() {
+  if (player) {
+    try { player.pause(); player.unload(); player.detachMediaElement(); player.destroy(); } catch (e) {}
+    player = null;
+  }
+}
+
+window.addEventListener('load', play);
+</script>
+</body>
+</html>
